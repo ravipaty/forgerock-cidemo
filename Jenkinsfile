@@ -10,7 +10,7 @@ node {
   checkout scm
 
   stage 'Build image'
-  sh("docker build -t ${imageTag} openam")
+  sh("docker build --no-cache -t ${imageTag} openam")
 
 
   stage 'Push image to registry'
