@@ -1,8 +1,9 @@
 node {
-// test
+   // If deploying images to gcr - your project name here
   def project = 'engineering-devops'
   def appName = 'openam'
   def feSvcName = "${appName}"
+  // Generated image tag - adjust for your environment
   def imageTag = "gcr.io/${project}/${appName}:${env.BRANCH_NAME}.${env.BUILD_NUMBER}"
   def templateImage = "forgerock/${appName}:template"
 
@@ -16,28 +17,32 @@ node {
   sh("gcloud docker push ${imageTag}")
 
   stage "Deploy Application"
+
+ // Create prod namespace if it doesn't exist
+ sh("kubectl get ns production || kubectl create ns production")
+
   switch (env.BRANCH_NAME) {
-    // Roll out to staging
-    case "staging":
+    // canary deployment to production
+    case "canary":
         // Change deployed image in staging to the one we just built
-        sh("sed -i.bak 's#gcr.io/cloud-solutions-images/gceme:1.0.0#${imageTag}#' ./k8s/staging/*.yaml")
+            sh("sed -i.bak 's#${templateImage}#${imageTag}#' ./k8s/canary/*.yaml")
         sh("kubectl --namespace=production apply -f k8s/services/")
-        sh("kubectl --namespace=production apply -f k8s/staging/")
-        sh("echo http://`kubectl --namespace=production get service/${feSvcName} --output=json | jq -r '.status.loadBalancer.ingress[0].ip'` > ${feSvcName}")
+        sh("kubectl --namespace=production apply -f k8s/canary/")
+        //sh("echo http://`kubectl --namespace=production get service/${feSvcName} --output=json | jq -r '.status.loadBalancer.ingress[0].ip'` > ${feSvcName}")
         break
 
     // Roll out to production
-    case "master":
+    case "production":
         // Change deployed image in staging to the one we just built
-        //sh("sed -i.bak 's#gcr.io/cloud-solutions-images/gceme:1.0.0#${imageTag}#' ./k8s/production/*.yaml")
-        //sh("kubectl --namespace=production apply -f k8s/services/")
-        //sh("kubectl --namespace=production apply -f k8s/production/")
-        // sh("echo http://`kubectl --namespace=production get service/${feSvcName} --output=json | jq -r '.status.loadBalancer.ingress[0].ip'` > ${feSvcName}")
+        sh("sed -i.bak 's#${templateImage}#${imageTag}#' ./k8s/production/*.yaml")
+        sh("kubectl --namespace=production apply -f k8s/services/")
+        sh("kubectl --namespace=production apply -f k8s/production/")
+        //sh("echo http://`kubectl --namespace=production get service/${feSvcName} --output=json | jq -r '.status.loadBalancer.ingress[0].ip'` > ${feSvcName}")
         break
 
-    // Roll out a dev environment
+    // Roll out a dev (master) or feature branch environment. Each env gets its own namespace
     default:
-        // Create namespace if it doesn't exist
+        // Create dev branch namespace if it doesn't exist
         sh("kubectl get ns ${env.BRANCH_NAME} || kubectl create ns ${env.BRANCH_NAME}")
         // Don't use public load balancing for development branches
         sh("sed -i.bak 's#LoadBalancer#ClusterIP#' ./k8s/services/openam.yaml")
