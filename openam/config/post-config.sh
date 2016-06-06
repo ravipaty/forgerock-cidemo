@@ -29,7 +29,7 @@ function post {
 post '{}' "${openam}/json/realm-config/services/oauth-oidc?_action=create&_prettyPrint=true"
 
 # example of creating a realm
-realm=testrealm
+realm=foorealm
 
 post '{"name":"'${realm}'","parentPath":"/","aliases":[],"active":true,"statelessSessionsEnabled":false}'  \
    "${openam}/json/global-config/realms?_action=create&_prettyPrint=true"
