@@ -39,6 +39,7 @@ node {
     case "production":
         // Change deployed image in staging to the one we just built
         sh("sed -i.bak 's#${templateImage}#${imageTag}#' ./k8s/production/*.yaml")
+        sh("kubectl --namespace=${env.BRANCH_NAME} apply -f k8s/production/")
         sh("kubectl --namespace=${env.BRANCH_NAME} apply -f k8s/services/")
         // For prod we want an ingress
         sh("kubectl --namespace=${env.BRANCH_NAME} apply -f k8s/ingress/")
