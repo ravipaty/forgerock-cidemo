@@ -23,9 +23,12 @@ node {
 
   switch (env.BRANCH_NAME) {
     // canary deployment to production
+    // this doesnt do anything differnet right now - but when we
+    // get multi-instance OpenAM working on Kube, it will
+    // deploy a single canary node to a N node production cluster.
     case "canary":
-        // Change deployed image in staging to the one we just built
-            sh("sed -i.bak 's#${templateImage}#${imageTag}#' ./k8s/canary/*.yaml")
+        // Change deployed image to the one we just built
+        sh("sed -i.bak 's#${templateImage}#${imageTag}#' ./k8s/canary/*.yaml")
         sh("kubectl --namespace=production apply -f k8s/services/")
         sh("kubectl --namespace=production apply -f k8s/canary/")
         //sh("echo http://`kubectl --namespace=production get service/${feSvcName} --output=json | jq -r '.status.loadBalancer.ingress[0].ip'` > ${feSvcName}")
@@ -49,6 +52,9 @@ node {
         sh("sed -i.bak 's#${templateImage}#${imageTag}#' ./k8s/dev/*.yaml")
         sh("kubectl --namespace=${env.BRANCH_NAME} apply -f k8s/services/")
         sh("kubectl --namespace=${env.BRANCH_NAME} apply -f k8s/dev/")
+        // todo: do we want ingress?
+        sh("kubectl --namespace=${env.BRANCH_NAME} apply -f k8s/ingress/")
+
         echo 'To access your environment run `kubectl proxy`'
         echo "Then access your service via http://localhost:8001/api/v1/proxy/namespaces/${env.BRANCH_NAME}/services/${feSvcName}:80/"
   }
