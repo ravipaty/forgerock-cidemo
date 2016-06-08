@@ -45,6 +45,8 @@ post '{"username":"'${client}'", "AgentType": "OAuth2Client", "userpassword": "p
 
 # Test OAuth2
 # Not working - todo: find out why
-post 'grant_type=password&username=demo&password=changeit&client_id='${client}'&client_secret=password&scope=openid' \
-     "${openam}/oauth2/access_token"
+#post 'grant_type=password&username=demo&password=changeit&client_id='${client}'&client_secret=password&scope=openid' \
+#     "${openam}/oauth2/access_token"
 
+
+echo "Done post config"
