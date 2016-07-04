@@ -19,7 +19,7 @@ node {
   stage "Deploy Application"
 
  // Create prod namespace if it doesn't exist
- sh("sudo kubectl get ns production || sudo kubectl create ns production")
+ sh("kubectl get ns production || kubectl create ns production")
 
   switch (env.BRANCH_NAME) {
     // canary deployment to production
@@ -30,8 +30,8 @@ node {
         // Change deployed image to the one we just built
         sh("sed -i.bak 's#${templateImage}#${imageTag}#' ./k8s/canary/*.yaml")
         // note we depliy the canary to the *production* namespace
-        sh("sudo kubectl --namespace=production apply -f k8s/services/")
-        sh("sudo kubectl --namespace=production apply -f k8s/canary/")
+        sh("kubectl --namespace=production apply -f k8s/services/")
+        sh("kubectl --namespace=production apply -f k8s/canary/")
         //sh("echo http://`kubectl --namespace=production get service/${feSvcName} --output=json | jq -r '.status.loadBalancer.ingress[0].ip'` > ${feSvcName}")
         break
 
@@ -39,17 +39,17 @@ node {
     case "production":
         // Change deployed image in staging to the one we just built
         sh("sed -i.bak 's#${templateImage}#${imageTag}#' ./k8s/production/*.yaml")
-        sh("sudo kubectl --namespace=${env.BRANCH_NAME} apply -f k8s/production/")
-        sh("sudo kubectl --namespace=${env.BRANCH_NAME} apply -f k8s/services/")
+        sh("kubectl --namespace=${env.BRANCH_NAME} apply -f k8s/production/")
+        sh("kubectl --namespace=${env.BRANCH_NAME} apply -f k8s/services/")
         // For prod we want an ingress
-        sh("sudo kubectl --namespace=${env.BRANCH_NAME} apply -f k8s/ingress/")
+        sh("kubectl --namespace=${env.BRANCH_NAME} apply -f k8s/ingress/")
         //sh("echo http://`kubectl --namespace=production get service/${feSvcName} --output=json | jq -r '.status.loadBalancer.ingress[0].ip'` > ${feSvcName}")
         break
 
     // Roll out a dev (master) or feature branch environment. Each env gets its own namespace
     default:
         // Create dev branch namespace if it doesn't exist
-        sh("sudo kubectl get ns ${env.BRANCH_NAME} || kubectl create ns ${env.BRANCH_NAME}")
+        sh("kubectl get ns ${env.BRANCH_NAME} || kubectl create ns ${env.BRANCH_NAME}")
         // Don't use public load balancing for development branches
         sh("sed -i.bak 's#LoadBalancer#ClusterIP#' ./k8s/services/openam.yaml")
         sh("sed -i.bak 's#${templateImage}#${imageTag}#' ./k8s/dev/*.yaml")
