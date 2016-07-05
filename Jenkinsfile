@@ -4,8 +4,7 @@ node {
   def appName = 'openam'
   def feSvcName = "${appName}"
   // Generated image tag - adjust for your environment
-  //def imageTag = "gcr.io/${project}/${appName}:${env.BRANCH_NAME}.${env.BUILD_NUMBER}"
-  def imageTag = "gcr.io/${project}/${appName}:${env.BRANCH_NAME}.21"
+  def imageTag = "gcr.io/${project}/${appName}:${env.BRANCH_NAME}.${env.BUILD_NUMBER}"
   def templateImage = "forgerock/${appName}:template"
 
   checkout scm
@@ -15,7 +14,7 @@ node {
 
 
   stage 'Push image to registry'
-  //sh("gcloud docker push ${imageTag}")
+  sh("gcloud docker push ${imageTag}")
 
   stage "Deploy Application"
 
