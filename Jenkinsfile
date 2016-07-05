@@ -1,6 +1,6 @@
 node {
    // If deploying images to gcr - your project name here
-  def project = 'openam'
+  def project = 'openam-1341'
   def appName = 'openam'
   def feSvcName = "${appName}"
   // Generated image tag - adjust for your environment
