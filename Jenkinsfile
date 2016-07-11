@@ -14,7 +14,7 @@ node {
 
 
   stage 'Push image to registry'
-  sh("gcloud docker push ${imageTag}")
+  sh("docker push ${imageTag}")
 
   stage "Deploy Application"
 
